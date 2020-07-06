@@ -44,6 +44,8 @@ public class EventControllerTests {
                 .description("REST API Development with Spring")
                 .beginEnrollmentDateTime(LocalDateTime.of(2018, 11, 1, 10, 1))
                 .closeEnrollmentDateTime(LocalDateTime.of(2018, 11, 1, 10, 1))
+                .beginEventDateTime(LocalDateTime.of(2018, 11, 1, 10, 1))
+                .endEventDateTime(LocalDateTime.of(2018, 11, 1, 10, 1))
                 .basePrice(100)
                 .maxPrice(200)
                 .limitOfEnrollment(100)
@@ -54,7 +56,7 @@ public class EventControllerTests {
         // 해결 : eventRepository의 save 호출시 event 리턴
 //        Mockito.when(eventRepository.save(event)).thenReturn(event);
 
-        mockMvc.perform(post("/api/events/")
+        mockMvc.perform(post("/api/events")
                     .contentType(MediaType.APPLICATION_JSON_UTF8)
                     .accept(MediaTypes.HAL_JSON)
                     .content(objectMapper.writeValueAsString(event)))
@@ -88,14 +90,25 @@ public class EventControllerTests {
         // 해결 : eventRepository의 save 호출시 event 리턴
 //        Mockito.when(eventRepository.save(event)).thenReturn(event);
 
-        mockMvc.perform(post("/api/events/")
+        mockMvc.perform(post("/api/events")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaTypes.HAL_JSON)
                 .content(objectMapper.writeValueAsString(event)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
         ;
+    }
 
+    @Test
+    public void createEvent_Bad_Request_Empty_Input() throws Exception{
+        EventDto eventDto = EventDto.builder().build();
+
+        mockMvc.perform(post("/api/events")
+                    .contentType(MediaType.APPLICATION_JSON_UTF8)
+                    .accept(MediaTypes.HAL_JSON)
+                    .content(objectMapper.writeValueAsString(eventDto)))
+                .andExpect(status().isBadRequest())
+                ;
     }
 
 }

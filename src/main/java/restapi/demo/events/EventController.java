@@ -4,14 +4,19 @@ import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
+import javax.validation.Valid;
 import java.net.URI;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @Controller
+@RequestMapping(value="/api/events", produces = MediaTypes.HAL_JSON_VALUE)
 public class EventController {
 
     private final EventRepository eventRepository;
@@ -23,8 +28,12 @@ public class EventController {
         this.modelMapper = modelMapper;
     }
 
-    @PostMapping(value = "/api/events/", produces = MediaTypes.HAL_JSON_VALUE)
-    public ResponseEntity createEvent(@RequestBody EventDto eventDto) {
+    @PostMapping
+    public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto, BindingResult errors) {
+        // @Valid 검증 후 결과를 Errors객체에 전달해 준다.
+        if (errors.hasErrors()){
+            return ResponseEntity.badRequest().build();
+        }
         Event event = modelMapper.map(eventDto, Event.class);
         Event newEvent = this.eventRepository.save(event);
         URI createdUri =  linkTo(EventController.class).slash(newEvent.getId()).toUri();
