@@ -6,19 +6,23 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import restapi.demo.common.RestDocsConfiguration;
 import restapi.demo.common.TestDescription;
 
 import java.time.LocalDateTime;
 
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -27,6 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 //@WebMvcTest // 웹과 관련된 bean을 만든다.
 @SpringBootTest // @SpringBootApplication을 찾아서 설정된 모든 어노테이션을 등록시켜준다.
 @AutoConfigureMockMvc
+@AutoConfigureRestDocs
+@Import(RestDocsConfiguration.class)
 public class EventControllerTests {
 
     @Autowired
@@ -67,8 +73,13 @@ public class EventControllerTests {
                 .andExpect(jsonPath("id").exists())
                 .andExpect(header().exists(HttpHeaders.LOCATION))
                 .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("id").value(Matchers.not(100)))
-                .andExpect(jsonPath("free").value(Matchers.not(true)))
+                .andExpect(jsonPath("free").value(false))
+                .andExpect(jsonPath("offline").value(true))
+                .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.toString()))
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.query-events").exists())
+                .andExpect(jsonPath("_links.update-event").exists())
+                .andDo(document("create-event"))
         ;
     }
 
